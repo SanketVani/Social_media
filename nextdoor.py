@@ -1,16 +1,16 @@
 from bs4 import BeautifulSoup
 import re
 
-def parse_facebook(html: str) -> list:
+def parse_nextdoor(html: str) -> list:
     soup = BeautifulSoup(html, "lxml")
 
-    entries = soup.find_all("div",class_="MjjYud")
+    entries = soup.find_all("div", class_="N54PNb")
     print(f"Found {len(entries)} entries.")
 
     results = []
 
     for entry in entries:
-        info = {"title": "", "url": "", "emails": [], "phones": [],"followers": "",}
+        info = {"title": "", "url": "", "emails": [], "phones": []}
 
         title_tag = entry.find("h3")
         if title_tag:
@@ -33,12 +33,6 @@ def parse_facebook(html: str) -> list:
             text
         )
         info["phones"] = list(set(re.sub(r"\D", "", p) for p in phones))
-
-        cite_tag = entry.find("cite", string=re.compile("followers", re.I))
-        if cite_tag:
-            match = re.search(r"(\d[\d,\.]*\s*[kKmM]?)\s*", cite_tag.get_text())
-            if match:
-                info["followers"] = match.group(1)
 
         results.append(info)
 

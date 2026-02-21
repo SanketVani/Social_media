@@ -1,16 +1,15 @@
 from bs4 import BeautifulSoup
 import re
 
-def parse_facebook(html: str) -> list:
+def parse_twitter(html: str) -> list:
     soup = BeautifulSoup(html, "lxml")
-
-    entries = soup.find_all("div",class_="MjjYud")
+    entries = soup.find_all("div", class_="MjjYud")
     print(f"Found {len(entries)} entries.")
 
     results = []
 
     for entry in entries:
-        info = {"title": "", "url": "", "emails": [], "phones": [],"followers": "",}
+        info = {"title": "","url": "","emails": [],"phones": [],"followers": ""}
 
         title_tag = entry.find("h3")
         if title_tag:
@@ -21,17 +20,12 @@ def parse_facebook(html: str) -> list:
             info["url"] = a_tag["href"]
 
         text = entry.get_text(" ", strip=True)
+       
+        info["emails"] = list(set(re.findall(
+            r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",text
+        )))
 
-        emails = re.findall(
-            r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
-            text
-        )
-        info["emails"] = list(set(emails))
-
-        phones = re.findall(
-            r'\+?\d[\d\s().-]{7,15}\d',
-            text
-        )
+        phones = re.findall(r'\+?\d[\d\s().-]{7,15}\d', text)
         info["phones"] = list(set(re.sub(r"\D", "", p) for p in phones))
 
         cite_tag = entry.find("cite", string=re.compile("followers", re.I))
